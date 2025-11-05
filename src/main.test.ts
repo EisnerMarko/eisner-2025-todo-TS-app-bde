@@ -1,36 +1,28 @@
 import { describe, it, expect, beforeEach } from 'vitest';
+import { addTodo, todos } from './features/addTodo';
+import { removeTodo } from './features/removeTodo';
+import { toggleCompleted } from './features/toggleComplete';
 
-interface Todo {
-  id: number;
-  title: string;
-  completed: boolean;
-}
-
-let todos: Todo[] = [];
-
-describe('Todo App', () => {
+describe('Todo App Basic Functions', () => {
   beforeEach(() => {
-    todos = [];
+    todos.length = 0; // reset array before each test
   });
 
-  it('should add a new todo', () => {
-    const newTodo: Todo = { id: 1, title: 'Test Todo', completed: false };
-    todos.push(newTodo);
+  it('adds a new todo', () => {
+    addTodo('Test Todo');
     expect(todos.length).toBe(1);
-    expect(todos[0]).toEqual(newTodo);
+    expect(todos[0].text).toBe('Test Todo');
   });
 
-  it('should mark a todo as completed', () => {
-    const newTodo: Todo = { id: 1, title: 'Test Todo', completed: false };
-    todos.push(newTodo);
-    todos[0].completed = true;
+  it('toggles todo completion', () => {
+    addTodo('Complete Me');
+    toggleCompleted(todos[0].id);
     expect(todos[0].completed).toBe(true);
   });
 
-  it('should delete a todo', () => {
-    const newTodo: Todo = { id: 1, title: 'Test Todo', completed: false };
-    todos.push(newTodo);
-    todos = todos.filter(todo => todo.id !== newTodo.id);
+  it('removes a todo', () => {
+    addTodo('Delete Me');
+    removeTodo(todos[0].id);
     expect(todos.length).toBe(0);
   });
 });
