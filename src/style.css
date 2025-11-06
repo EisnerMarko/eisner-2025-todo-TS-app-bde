@@ -97,3 +97,14 @@ h1 {
 .todo-item.completed {
   background-color: #6fff91ff;
 }
+
+.span-2{
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 10px;
+}
+
+.menu-features{
+  border: none;
+  cursor: pointer;
+}
