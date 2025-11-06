@@ -9,8 +9,6 @@ jobs:
   integration-delivery:
     runs-on: ubuntu-latest
     environment: Test
-    container:
-      image: node
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -42,21 +40,17 @@ jobs:
         run: |
           URL="https://markosdesign.com/eisner-2025-todo-TS-app-bde-main/"
           echo "Waiting for $URL to respond..."
-          i=0
-          until curl -sSf "$URL" -o /dev/null || [ $i -ge 12 ]; do
-            i=$((i+1))
-            echo "Attempt $i: $URL still not responding, waiting 5s..."
-            sleep 5
+          n=0
+          until [ $n -ge 12 ]; do
+            status=$(curl -s -o /dev/null -w "%{http_code}" $URL)
+            if [ "$status" -eq 200 ]; then
+              echo "✅ Site is live (HTTP 200)"
+              break
+            fi
+            n=$((n+1))
+            echo "Attempt $n: site not ready (HTTP $status)... retrying in 10s"
+            sleep 10
           done
-          if [ $i -ge 12 ]; then
-            echo "Site did not respond after $i attempts - continuing so we can capture logs/artifacts"
-            # do not fail the job here; tests will reveal the problem
-          else
-            echo "Site is responding."
-          fi
-
-      - name: Install TestCafe
-        run: npm install testcafe --no-audit --no-fund
 
       - name: Update APT
         run: apt-get update
@@ -64,13 +58,16 @@ jobs:
       - name: Install Chromium
         run: apt-get install -y chromium
 
+      - name: Install TestCafe
+        run: npm install testcafe --no-audit --no-fund
+
       - name: Run TestCafe tests
-        run: npx testcafe "chromium:headless --no-sandbox --disable-dev-shm-usage --ignore-certificate-errors --disable-gpu --disable-setuid-sandbox" tests/* \
-            --skip-js-errors \
-            --selector-timeout 20000 \
-            --assertion-timeout 20000 \
-            --page-load-timeout 30000 \
-            --speed 0.9 \
-            --reporter spec \
-            --video artifacts/videos \
-            --screenshots artifacts/screenshots \
+        run: npx testcafe "chromium:headless --no-sandbox --disable-dev-shm-usage --ignore-certificate-errors --disable-gpu --disable-setuid-sandbox" \
+          "tests/*.js" \
+          --skip-js-errors \
+          --selector-timeout 20000 \
+          --assertion-timeout 20000 \
+          --page-load-timeout 40000 \
+          --speed 0.9 \
+          --concurrency 1 \
+          --reporter spec
