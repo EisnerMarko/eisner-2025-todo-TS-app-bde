@@ -38,25 +38,27 @@ jobs:
       
       - name: Wait for site to respond (retry)
         run: |
-          URL="https://markosdesign.com/eisner-2025-todo-TS-app-bde-main/"
+          URL="https://markosdesign.com/eisner-2025-todo-TS-app-bde-main/index.html"
           echo "Waiting for $URL to respond..."
           n=0
-          until [ $n -ge 12 ]; do
+          until [ $n -ge 20 ]; do
             status=$(curl -s -o /dev/null -w "%{http_code}" $URL)
             if [ "$status" -eq 200 ]; then
               echo "✅ Site is live (HTTP 200)"
               break
             fi
             n=$((n+1))
-            echo "Attempt $n: site not ready (HTTP $status)... retrying in 10s"
-            sleep 10
+            echo "Attempt $n: site not ready (HTTP $status)... retrying in 15s"
+            sleep 15
           done
 
       - name: Update APT
         run: apt-get update
 
       - name: Install Chromium
-        run: apt-get install -y chromium
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y chromium
 
       - name: Install TestCafe
         run: npm install testcafe --no-audit --no-fund
