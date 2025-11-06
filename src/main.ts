@@ -10,7 +10,7 @@
 
 // Imports
 import './style.css';
-import { addTodo, todos } from './features/addTodo';
+import { addTodo } from './features/addTodo';
 import { removeTodo } from './features/removeTodo';
 import { toggleCompleted } from './features/toggleComplete';
 import { editTodo } from './features/editTodo';
