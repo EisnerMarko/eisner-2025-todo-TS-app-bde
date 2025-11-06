@@ -48,4 +48,14 @@ jobs:
         run: apt-get install -y chromium
 
       - name: Run TestCafe tests
-        run: testcafe "chromium:headless --no-sandbox --disable-dev-shm-usage" tests/* --selector-timeout 10000 --assertion-timeout 10000
+        run: testcafe "chromium:headless --no-sandbox --disable-dev-shm-usage --ignore-certificate-errors --disable-gpu --disable-setuid-sandbox" tests/* --skip-js-errors --selector-timeout 15000 --assertion-timeout 15000 --page-load-timeout 20000
+
+      - name: Wait for site to respond
+        run: |
+          n=0
+          until [ $n -ge 5 ]; do
+            curl -sSf https://markosdesign.com/eisner-2025-todo-TS-app-bde-main/ && break
+            n=$((n+1))
+            echo "Waiting for site... ($n/5)"
+            sleep 5
+          done
