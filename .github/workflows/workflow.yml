@@ -48,4 +48,4 @@ jobs:
         run: apt-get install -y chromium
 
       - name: Run TestCafe tests
-        run: testcafe chromium:headless tests/*
+        run: testcafe "chromium:headless --no-sandbox --disable-dev-shm-usage" tests/* --selector-timeout 10000 --assertion-timeout 10000
