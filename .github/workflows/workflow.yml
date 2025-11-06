@@ -25,3 +25,12 @@ jobs:
 
       - name: Build project
         run: npm run build
+      
+      - name: FTP delivery
+        uses: SamKirkland/FTP-Deploy-Action@4.3.3
+        with:
+          server: linux30.unoeuro.com
+          username: markosdesign.com
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./
+          server-dir: /public_html/eisner-2025-todo-TS-app-bde-main
