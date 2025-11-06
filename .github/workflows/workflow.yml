@@ -37,3 +37,15 @@ jobs:
           local-dir: ./dist/
           server-dir: /public_html/eisner-2025-todo-TS-app-bde-main/
           timeout: 60000
+      
+      - name: Install TestCafe
+        run: npm install -g testcafe
+
+      - name: Update APT
+        run: sudo apt-get update
+
+      - name: Install Chromium
+        run: sudo apt-get install -y chromium-browser
+
+      - name: Run TestCafe tests
+        run: testcafe chromium:headless tests/*
