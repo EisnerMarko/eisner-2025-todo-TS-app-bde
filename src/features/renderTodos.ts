@@ -20,6 +20,11 @@ export const renderTodos = (): void => { // void because no return - what we are
   todos.forEach(todo => {
     const li = document.createElement('li');
     li.className = 'todo-item';
+
+    if (todo.completed) {
+        li.classList.add('completed');
+    }
+
     li.innerHTML = `
       <span>${todo.text}</span>
       <button class="complete-btn">${todo.completed ? 'Undo' : 'Complete'}</button>

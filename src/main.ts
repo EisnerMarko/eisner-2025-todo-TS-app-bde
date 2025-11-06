@@ -10,6 +10,7 @@
 
 // Imports
 import './style.css';
+import { loadTodosFromLocalStorage, saveTodosToLocalStorage, clearLocalStorage } from './features/localStorage';
 import { addTodo } from './features/addTodo';
 import { removeTodo } from './features/removeTodo';
 import { toggleCompleted } from './features/toggleComplete';
@@ -22,6 +23,11 @@ import { initializeColorPicker } from './features/colorPicker';
 const todoInput = document.getElementById('todo-input') as HTMLInputElement; // exist in HTML file
 const todoForm = document.querySelector('.todo-form') as HTMLFormElement;    // exist in HTML file
 const errorMessage = document.getElementById('error-message') as HTMLParagraphElement;
+
+document.addEventListener('DOMContentLoaded', () => {
+  loadTodosFromLocalStorage();
+  renderTodos();
+});
 
 todoForm.addEventListener('submit', (event: Event) => {
   event.preventDefault(); // Prevent the default form submission behavior
@@ -50,6 +56,7 @@ todoForm.addEventListener('submit', (event: Event) => {
   if (text !== '') { // Check if the input field is not empty. Sort of a reverse falsey
     addTodo(text);
     todoInput.value = ''; // Clear the input field
+    saveTodosToLocalStorage();
   }
 });
 
@@ -76,6 +83,11 @@ document.addEventListener('click', (event) => {
   }
 });
 
+const clearButton = document.getElementById('clear-todos-btn') as HTMLButtonElement;
+clearButton?.addEventListener('click', () => {
+  clearLocalStorage();
+});
+
 // Call the initializeColorPicker function when the DOM is fully loaded
 document.addEventListener('DOMContentLoaded', () => {
   initializeColorPicker();
@@ -93,6 +105,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 //Optional features list: 
 
+// DONE
 // Option 1: Add a button to toggle the completed status of a todo item
 // Function to toggle the completed status of a todo + 
 // Add a button to toggle the completed status of a todo item
