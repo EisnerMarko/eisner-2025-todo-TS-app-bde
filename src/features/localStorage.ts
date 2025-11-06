@@ -13,6 +13,16 @@ export const loadTodosFromLocalStorage = (): void => {
     const parsedTodos = JSON.parse(storedTodos);
     todos.push(...parsedTodos); // Add them to the existing todos array
   }
+
+  // Load background color too
+  const savedColor = localStorage.getItem('backgroundColor');
+  if (savedColor) {
+    document.body.style.backgroundColor = savedColor;
+
+    // Set the color picker to match saved color
+    const colorPicker = document.getElementById('colorPicker') as HTMLInputElement | null;
+    if (colorPicker) colorPicker.value = savedColor;
+  }
 };
 
 // Clear all todos from local storage
