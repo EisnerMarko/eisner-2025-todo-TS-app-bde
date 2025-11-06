@@ -33,4 +33,4 @@ jobs:
           username: markosdesign.com
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./
-          server-dir: /public_html/eisner-2025-todo-TS-app-bde-main
+          server-dir: /public_html/eisner-2025-todo-TS-app-bde-main/
