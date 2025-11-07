@@ -42,7 +42,7 @@ jobs:
           args: "chrome tests/*"
 
       - name: Archive build artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: build-artifacts
           path: ./dist/
@@ -53,7 +53,7 @@ jobs:
     environment: Live
     steps:
       - name: Load build artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: build-artifacts
           path: ./dist/
