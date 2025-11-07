@@ -41,11 +41,23 @@ jobs:
         with:
           args: "chrome tests/*"
 
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-artifacts
+          path: ./dist/
+
   deploy:
     needs: integration-delivery
     runs-on: ubuntu-22.04
     environment: Live
     steps:
+      - name: Load build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build-artifacts
+          path: ./dist/
+
       - name: FTP deploy
         uses: SamKirkland/FTP-Deploy-Action@4.3.3
         with:
