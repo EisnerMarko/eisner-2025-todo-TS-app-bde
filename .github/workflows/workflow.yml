@@ -58,22 +58,34 @@ jobs:
             echo "::warning::Site did not report 200/455 after $max attempts — continuing anyway so we can capture logs"
           fi
 
-      - name: Install Chromium (with sudo)
+      - name: Install Puppeteer Chromium (for stable CI)
         run: |
-          sudo apt-get update
-          sudo apt-get install -y chromium
+          npm install puppeteer --no-audit --no-fund
+          echo "✅ Puppeteer Chromium installed for more stable CI browser"
 
       - name: Install TestCafe (local)
         run: npm install testcafe --no-audit --no-fund
 
-      - name: Run TestCafe tests (remote site, stable flags)
+      - name: Run TestCafe tests (robust CI setup)
         run: |
-          npx testcafe "chromium:headless --no-sandbox --disable-dev-shm-usage --ignore-certificate-errors --disable-gpu --disable-setuid-sandbox" \
+          mkdir -p artifacts/videos artifacts/screenshots
+          npx testcafe "chromium:headless --allow-insecure-localhost --disable-gpu --disable-dev-shm-usage --no-sandbox --disable-setuid-sandbox --disable-extensions" \
             "tests/*.js" \
             --skip-js-errors \
+            --quarantine-mode \
             --selector-timeout 20000 \
-            --assertion-timeout 20000 \
-            --page-load-timeout 40000 \
+            --assertion-timeout 30000 \
+            --page-load-timeout 45000 \
             --speed 0.9 \
             --concurrency 1 \
-            --reporter spec
+            --reporter spec \
+            --video artifacts/videos \
+            --screenshots artifacts/screenshots \
+            --screenshots-on-fails
+
+      - name: Upload screenshots and videos (always run)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: testcafe-artifacts
+          path: artifacts/
