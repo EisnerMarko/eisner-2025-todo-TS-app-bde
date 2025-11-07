@@ -134,6 +134,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // Add a button to filter todos by status
 // Function to filter todos by status
 
+// DONE
 // Option 5: Add a button to sort todos by status
 // Add a button to sort todos by status
 // Function to sort todos by status
