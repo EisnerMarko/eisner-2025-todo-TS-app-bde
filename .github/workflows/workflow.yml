@@ -17,10 +17,11 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '22' # or '22.14.0'
+          node-version: '22.14.0'
 
-      - name: Install dependencies
-        run: npm ci
+      - name: Install dependencies (safe)
+        run: |
+          npm ci || npm install
 
       - name: Build project
         run: npm run build
@@ -42,7 +43,7 @@ jobs:
           URL="https://markosdesign.com/eisner-2025-todo-TS-app-bde-main/index.html"
           echo "Waiting for $URL to respond (accepting HTTP 200 or 455)..."
           n=0
-          max=25
+          max=20
           while [ $n -lt $max ]; do
             status=$(curl -s -o /dev/null -w "%{http_code}" "$URL" || echo "000")
             echo "Attempt $((n+1)): HTTP $status"
@@ -55,39 +56,36 @@ jobs:
             sleep 15
           done
           if [ $n -ge $max ]; then
-            echo "::warning::Site did not report 200/455 after $max attempts — continuing anyway so we can capture logs"
+            echo "::warning::Site did not report 200/455 after $max attempts — continuing anyway."
           fi
 
-      - name: Install TestCafe + Playwright provider + ffmpeg helper
+      - name: Install Chromium + FFmpeg
         run: |
-          npm install --no-audit --no-fund testcafe testcafe-browser-provider-playwright @ffmpeg-installer/ffmpeg
-
-      - name: Install Playwright browsers
-        run: npx playwright install chromium
+          sudo apt-get update
+          sudo apt-get install -y chromium ffmpeg
 
       - name: Prepare artifact folders
         run: mkdir -p artifacts/videos artifacts/screenshots
 
-      - name: Run TestCafe tests (Playwright Chromium)
-        env:
-          FFMPEG_PATH: node_modules/@ffmpeg-installer/ffmpeg/dist/ffmpeg
+      - name: Install TestCafe
+        run: npm install testcafe --no-audit --no-fund
+
+      - name: Run TestCafe tests (remote site)
         run: |
-          echo "Running TestCafe with Playwright Chromium..."
-          npx testcafe "playwright:chromium:headless" "tests/*.js" \
+          echo "🚀 Running TestCafe tests with robust settings"
+          npx testcafe "chromium:headless --no-sandbox --disable-dev-shm-usage --ignore-certificate-errors --disable-gpu --disable-setuid-sandbox" \
+            "tests/*.js" \
             --skip-js-errors \
-            --quarantine-mode \
             --selector-timeout 20000 \
-            --assertion-timeout 30000 \
-            --page-load-timeout 45000 \
+            --assertion-timeout 20000 \
+            --page-load-timeout 40000 \
             --speed 0.9 \
             --concurrency 1 \
             --reporter spec \
-            --video artifacts/videos \
             --screenshots artifacts/screenshots \
-            --screenshots-on-fails \
-            || echo "TestCafe run finished with non-zero exit (we'll upload artifacts)."
+            --video artifacts/videos || echo "⚠️ TestCafe reported an error but continuing to upload artifacts"
 
-      - name: Upload screenshots and videos (always run)
+      - name: Upload artifacts (always)
         if: always()
         uses: actions/upload-artifact@v4
         with:
