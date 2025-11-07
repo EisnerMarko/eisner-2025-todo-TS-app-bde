@@ -61,15 +61,19 @@ jobs:
       - name: Install Puppeteer Chromium (for stable CI)
         run: |
           npm install puppeteer --no-audit --no-fund
-          echo "✅ Puppeteer Chromium installed for more stable CI browser"
+          echo "✅ Puppeteer Chromium installed for stable CI browser"
 
-      - name: Install TestCafe (local)
-        run: npm install testcafe --no-audit --no-fund
+      - name: Install TestCafe and FFmpeg
+        run: |
+          npm install testcafe @ffmpeg-installer/ffmpeg --no-audit --no-fund
+          echo "✅ TestCafe + FFmpeg installed"
 
       - name: Run TestCafe tests (robust CI setup)
+        env:
+          FFMPEG_PATH: node_modules/@ffmpeg-installer/ffmpeg/dist/ffmpeg
         run: |
           mkdir -p artifacts/videos artifacts/screenshots
-          npx testcafe "chromium:headless --allow-insecure-localhost --disable-gpu --disable-dev-shm-usage --no-sandbox --disable-setuid-sandbox --disable-extensions" \
+          npx testcafe "chromium:headless --no-sandbox --disable-dev-shm-usage --ignore-certificate-errors --disable-gpu --disable-setuid-sandbox" \
             "tests/*.js" \
             --skip-js-errors \
             --quarantine-mode \
