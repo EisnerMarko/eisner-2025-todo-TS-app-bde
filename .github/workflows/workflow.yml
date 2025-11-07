@@ -40,3 +40,20 @@ jobs:
         uses: DevExpress/testcafe-action@latest
         with:
           args: "chrome tests/*"
+
+  deploy:
+    needs: integration-delivery
+    runs-on: ubuntu-22.04
+    environment: Live
+    steps:
+      - name: FTP deploy
+        uses: SamKirkland/FTP-Deploy-Action@4.3.3
+        with:
+          server: linux30.unoeuro.com
+          username: markosdesign.com
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftps
+          port: 21
+          local-dir: ./dist/live/
+          server-dir: /public_html/eisner-2025-todo-TS-app-bde-main/
+          timeout: 60000
