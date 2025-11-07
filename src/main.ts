@@ -18,6 +18,7 @@ import { editTodo } from './features/editTodo';
 import { renderTodos } from './features/renderTodos';
 import { initializeColorPicker } from './features/colorPicker';
 import { sortTodosByStatus } from './features/sortTodos';
+import { updateProgressBar } from './features/progressBar';
 
 
 // Get references to the HTML elements: These references will be used to interact with the DOM
@@ -28,6 +29,7 @@ const errorMessage = document.getElementById('error-message') as HTMLParagraphEl
 document.addEventListener('DOMContentLoaded', () => {
   loadTodosFromLocalStorage();
   renderTodos();
+  updateProgressBar();
 });
 
 todoForm.addEventListener('submit', (event: Event) => {
@@ -45,11 +47,6 @@ todoForm.addEventListener('submit', (event: Event) => {
     errorMessage.style.display = 'block'; // Show the error message
   }
 });
-
-// Initial render
-renderTodos();
-// The initial render is important to display the list of todos when the page is first loaded. Without it, the list would be empty until a new todo is added.
-// Move it when code is complete ( refactoring ) 
 
 todoForm.addEventListener('submit', (event: Event) => {
   event.preventDefault(); // Prevent the default form submission behavior
