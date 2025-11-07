@@ -4,10 +4,10 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "build": "vite build",
+    "dev": "vite",
+    "build": "tsc && vite build",
     "preview": "vite preview",
-    "test:local": "testcafe \"playwright:chromium\" tests/*.js",
-    "test:ci": "testcafe \"playwright:chromium:headless\" tests/*.js"
+    "test": "vitest"
   },
   "devDependencies": {
     "@testing-library/dom": "^10.4.0",
@@ -16,8 +16,6 @@
     "vitest": "^4.0.7"
   },
   "dependencies": {
-    "@ffmpeg-installer/ffmpeg": "^1.1.0",
-    "testcafe": "^3.7.2",
-    "testcafe-browser-provider-playwright": "^1.1.0"
+    "testcafe": "^3.7.2"
   }
 }

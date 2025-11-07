@@ -1,47 +1,51 @@
-name: Run TestCafe Tests
+name: soloWorkflow
 
 on:
   push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+    branches:
+      - main
 
 jobs:
-  test:
+  integration-delivery:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
-
+    environment: Test
+    container:
+      image: node
     steps:
-      - name: 🧾 Checkout repository
-        uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-      - name: ⚙️ Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
         with:
-          node-version: 20
+          node-version: '22.14.0'
 
-      - name: 📦 Install dependencies
-        run: |
-          npm install
-          npx browserslist@latest --update-db
+      - name: Install dependencies
+        run: npm install
 
-      - name: 🚀 Run TestCafe tests (fast & stable)
-        run: |
-          echo "🚀 Running TestCafe tests with optimized settings"
-          npx testcafe "chromium:headless --no-sandbox --disable-dev-shm-usage --disable-gpu --disable-setuid-sandbox --ignore-certificate-errors" \
-            tests/**/*.test.js \
-            --selector-timeout 3000 \
-            --assertion-timeout 3000 \
-            --page-load-timeout 5000 \
-            --skip-js-errors \
-            --quarantine-mode \
-            --reporter spec || echo "⚠️ Tests failed, continuing for debug"
-
-      - name: 📤 Upload logs even if failed
-        if: always()
-        uses: actions/upload-artifact@v4
+      - name: Build project
+        run: npm run build
+      
+      - name: FTP delivery
+        uses: SamKirkland/FTP-Deploy-Action@4.3.3
         with:
-          name: test-logs
-          path: |
-            artifacts/
-            testcafe-reports/
+          server: linux30.unoeuro.com
+          username: markosdesign.com
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftps
+          port: 21
+          local-dir: ./dist/
+          server-dir: /public_html/eisner-2025-todo-TS-app-bde-main/
+          timeout: 60000
+      
+      - name: Install TestCafe
+        run: npm install -g testcafe
+
+      - name: Update APT
+        run: apt-get update
+
+      - name: Install Chromium
+        run: apt-get install -y chromium
+
+      - name: Run TestCafe tests
+        run: testcafe chromium:headless tests/*
