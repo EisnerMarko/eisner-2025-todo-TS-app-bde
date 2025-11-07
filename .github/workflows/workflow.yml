@@ -66,6 +66,6 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           protocol: ftps
           port: 21
-          local-dir: ./dist/live/
+          local-dir: ./dist/
           server-dir: /public_html/eisner-2025-todo-TS-app-bde-main/
           timeout: 60000
