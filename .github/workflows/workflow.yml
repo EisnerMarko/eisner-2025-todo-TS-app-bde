@@ -8,7 +8,8 @@ on:
 jobs:
   integration-delivery:
     runs-on: ubuntu-latest
-    environment: Test
+    timeout-minutes: 40
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -19,11 +20,11 @@ jobs:
           node-version: '22.14.0'
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Build project
         run: npm run build
-      
+
       - name: FTP delivery
         uses: SamKirkland/FTP-Deploy-Action@4.3.3
         with:
@@ -35,41 +36,44 @@ jobs:
           local-dir: ./dist/
           server-dir: /public_html/eisner-2025-todo-TS-app-bde-main/
           timeout: 60000
-      
-      - name: Wait for site to respond (retry)
+
+      - name: Wait for site to respond (accept 200 or 455)
         run: |
           URL="https://markosdesign.com/eisner-2025-todo-TS-app-bde-main/index.html"
-          echo "Waiting for $URL to respond..."
+          echo "Waiting for $URL to respond (accepting HTTP 200 or 455)..."
           n=0
-          until [ $n -ge 20 ]; do
-            status=$(curl -s -o /dev/null -w "%{http_code}" $URL)
-            if [ "$status" -eq 200 ]; then
-              echo "✅ Site is live (HTTP 200)"
+          max=20
+          while [ $n -lt $max ]; do
+            status=$(curl -s -o /dev/null -w "%{http_code}" "$URL" || echo "000")
+            echo "Attempt $((n+1)): HTTP $status"
+            if [ "$status" -eq 200 ] || [ "$status" -eq 455 ]; then
+              echo "✅ Site is responding (HTTP $status)"
               break
             fi
             n=$((n+1))
-            echo "Attempt $n: site not ready (HTTP $status)... retrying in 15s"
+            echo "Sleeping 15s before next attempt..."
             sleep 15
           done
+          if [ $n -ge $max ]; then
+            echo "::warning::Site did not report 200/455 after $max attempts — continuing anyway so we can capture logs"
+          fi
 
-      - name: Update APT
-        run: apt-get update
-
-      - name: Install Chromium
+      - name: Install Chromium (with sudo)
         run: |
           sudo apt-get update
           sudo apt-get install -y chromium
 
-      - name: Install TestCafe
+      - name: Install TestCafe (local)
         run: npm install testcafe --no-audit --no-fund
 
-      - name: Run TestCafe tests
-        run: npx testcafe "chromium:headless --no-sandbox --disable-dev-shm-usage --ignore-certificate-errors --disable-gpu --disable-setuid-sandbox" \
-          "tests/*.js" \
-          --skip-js-errors \
-          --selector-timeout 20000 \
-          --assertion-timeout 20000 \
-          --page-load-timeout 40000 \
-          --speed 0.9 \
-          --concurrency 1 \
-          --reporter spec
+      - name: Run TestCafe tests (remote site, stable flags)
+        run: |
+          npx testcafe "chromium:headless --no-sandbox --disable-dev-shm-usage --ignore-certificate-errors --disable-gpu --disable-setuid-sandbox" \
+            "tests/*.js" \
+            --skip-js-errors \
+            --selector-timeout 20000 \
+            --assertion-timeout 20000 \
+            --page-load-timeout 40000 \
+            --speed 0.9 \
+            --concurrency 1 \
+            --reporter spec
