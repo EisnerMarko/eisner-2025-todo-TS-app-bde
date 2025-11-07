@@ -17,7 +17,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '22.14.0'
+          node-version: '22' # or '22.14.0'
 
       - name: Install dependencies
         run: npm ci
@@ -54,36 +54,38 @@ jobs:
             echo "Sleeping 15s before next attempt..."
             sleep 15
           done
+          if [ $n -ge $max ]; then
+            echo "::warning::Site did not report 200/455 after $max attempts — continuing anyway so we can capture logs"
+          fi
 
-      - name: Install Chromium, TestCafe, and FFmpeg
+      - name: Install TestCafe + Playwright provider + ffmpeg helper
         run: |
-          sudo apt-get update
-          sudo apt-get install -y chromium
-          npm install testcafe @ffmpeg-installer/ffmpeg --no-audit --no-fund
+          npm install --no-audit --no-fund testcafe testcafe-browser-provider-playwright @ffmpeg-installer/ffmpeg
 
-      - name: Prepare artifacts folder
+      - name: Install Playwright browsers
+        run: npx playwright install chromium
+
+      - name: Prepare artifact folders
         run: mkdir -p artifacts/videos artifacts/screenshots
 
-      - name: Run TestCafe tests (stable setup)
+      - name: Run TestCafe tests (Playwright Chromium)
         env:
           FFMPEG_PATH: node_modules/@ffmpeg-installer/ffmpeg/dist/ffmpeg
-          TESTCAFE_CI: "true"
         run: |
-          echo "🚀 Running TestCafe tests with robust settings"
-          npx testcafe "chromium:headless --no-sandbox --disable-dev-shm-usage --ignore-certificate-errors --disable-setuid-sandbox --disable-gpu --disable-extensions --disable-software-rasterizer --disable-background-timer-throttling --disable-renderer-backgrounding --disable-backgrounding-occluded-windows" \
-            "tests/*.js" \
+          echo "Running TestCafe with Playwright Chromium..."
+          npx testcafe "playwright:chromium:headless" "tests/*.js" \
             --skip-js-errors \
             --quarantine-mode \
-            --selector-timeout 25000 \
+            --selector-timeout 20000 \
             --assertion-timeout 30000 \
-            --page-load-timeout 60000 \
+            --page-load-timeout 45000 \
             --speed 0.9 \
             --concurrency 1 \
             --reporter spec \
             --video artifacts/videos \
             --screenshots artifacts/screenshots \
             --screenshots-on-fails \
-            || echo "⚠️ TestCafe reported an error but continuing to upload artifacts"
+            || echo "TestCafe run finished with non-zero exit (we'll upload artifacts)."
 
       - name: Upload screenshots and videos (always run)
         if: always()
