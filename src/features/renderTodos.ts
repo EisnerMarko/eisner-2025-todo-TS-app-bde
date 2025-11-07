@@ -2,6 +2,8 @@ import { removeTodo } from './removeTodo';
 import { editTodo } from './editTodo';
 import { toggleCompleted } from './toggleComplete';
 import { todos } from './addTodo';
+import { updateProgressBar } from './progressBar';
+
 
 // Define the Todo interface: This interface defines the structure of a todo item.
 export interface Todo {
@@ -38,4 +40,8 @@ export const renderTodos = (): void => { // void because no return - what we are
 
     todoList.appendChild(li);
   });
+
+  document.addEventListener('DOMContentLoaded', () => {
+    updateProgressBar();
+});
 };

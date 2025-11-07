@@ -9,6 +9,11 @@
   <body>
     <div class="container">
       <h1>Todo App</h1>
+      <div class="progress-container">
+        <label for="todo-progress">Progress:</label>
+        <progress id="todo-progress" value="0" max="100"></progress>
+        <span id="progress-percentage">0%</span>
+      </div>
       <div class="span-2">
         <button class="menu-features" id="sort-todos-btn">Sort Todos by Status</button>
         <button class="menu-features" id="clear-todos-btn">Clear All Todos</button>
