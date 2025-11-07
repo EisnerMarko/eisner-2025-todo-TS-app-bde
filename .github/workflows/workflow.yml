@@ -7,18 +7,16 @@ on:
 
 jobs:
   integration-delivery:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     environment: Test
-    container:
-      image: node
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v6
         with:
-          node-version: '22.14.0'
+          node-version: 'latest'
 
       - name: Install dependencies
         run: npm install
@@ -37,3 +35,8 @@ jobs:
           local-dir: ./dist/
           server-dir: /public_html/eisner-2025-todo-TS-app-bde-main/
           timeout: 60000
+
+      - name: Run TestCafe Tests
+        uses: DevExpress/testcafe-action@latest
+        with:
+          args: "chrome tests/*"
