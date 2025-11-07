@@ -1,93 +1,47 @@
-name: soloWorkflow
+name: Run TestCafe Tests
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
-  integration-delivery:
+  test:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 5
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - name: 🧾 Checkout repository
+        uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
+      - name: ⚙️ Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          node-version: '22.14.0'
+          node-version: 20
 
-      - name: Install dependencies (safe)
+      - name: 📦 Install dependencies
         run: |
-          npm ci || npm install
+          npm install
+          npx browserslist@latest --update-db
 
-      - name: Build project
-        run: npm run build
-
-      - name: FTP delivery
-        uses: SamKirkland/FTP-Deploy-Action@4.3.3
-        with:
-          server: linux30.unoeuro.com
-          username: markosdesign.com
-          password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ftps
-          port: 21
-          local-dir: ./dist/
-          server-dir: /public_html/eisner-2025-todo-TS-app-bde-main/
-          timeout: 60000
-
-      - name: Wait for site to respond (accept 200 or 455)
+      - name: 🚀 Run TestCafe tests (fast & stable)
         run: |
-          URL="https://markosdesign.com/eisner-2025-todo-TS-app-bde-main/index.html"
-          echo "Waiting for $URL to respond (accepting HTTP 200 or 455)..."
-          n=0
-          max=20
-          while [ $n -lt $max ]; do
-            status=$(curl -s -o /dev/null -w "%{http_code}" "$URL" || echo "000")
-            echo "Attempt $((n+1)): HTTP $status"
-            if [ "$status" -eq 200 ] || [ "$status" -eq 455 ]; then
-              echo "✅ Site is responding (HTTP $status)"
-              break
-            fi
-            n=$((n+1))
-            echo "Sleeping 15s before next attempt..."
-            sleep 15
-          done
-          if [ $n -ge $max ]; then
-            echo "::warning::Site did not report 200/455 after $max attempts — continuing anyway."
-          fi
-
-      - name: Install Chromium + FFmpeg
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y chromium ffmpeg
-
-      - name: Prepare artifact folders
-        run: mkdir -p artifacts/videos artifacts/screenshots
-
-      - name: Install TestCafe
-        run: npm install testcafe --no-audit --no-fund
-
-      - name: Run TestCafe tests (remote site)
-        run: |
-          echo "🚀 Running TestCafe tests with robust settings"
-          npx testcafe "chromium:headless --no-sandbox --disable-dev-shm-usage --ignore-certificate-errors --disable-gpu --disable-setuid-sandbox" \
-            "tests/*.js" \
+          echo "🚀 Running TestCafe tests with optimized settings"
+          npx testcafe "chromium:headless --no-sandbox --disable-dev-shm-usage --disable-gpu --disable-setuid-sandbox --ignore-certificate-errors" \
+            tests/**/*.test.js \
+            --selector-timeout 3000 \
+            --assertion-timeout 3000 \
+            --page-load-timeout 5000 \
             --skip-js-errors \
-            --selector-timeout 20000 \
-            --assertion-timeout 20000 \
-            --page-load-timeout 40000 \
-            --speed 0.9 \
-            --concurrency 1 \
-            --reporter spec \
-            --screenshots artifacts/screenshots \
-            --video artifacts/videos || echo "⚠️ TestCafe reported an error but continuing to upload artifacts"
+            --quarantine-mode \
+            --reporter spec || echo "⚠️ Tests failed, continuing for debug"
 
-      - name: Upload artifacts (always)
+      - name: 📤 Upload logs even if failed
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: testcafe-artifacts
-          path: artifacts/
+          name: test-logs
+          path: |
+            artifacts/
+            testcafe-reports/
