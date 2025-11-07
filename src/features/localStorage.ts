@@ -1,5 +1,6 @@
 import { todos } from './addTodo';
 import { renderTodos } from './renderTodos';
+import { updateProgressBar } from './progressBar';
 
 // Save todos to local storage
 export const saveTodosToLocalStorage = (): void => {
@@ -30,4 +31,5 @@ export const clearLocalStorage = (): void => {
   localStorage.removeItem('todos');
   todos.length = 0; // Clear the in-memory array
   renderTodos();
+  updateProgressBar();
 };
