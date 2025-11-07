@@ -17,6 +17,7 @@ import { toggleCompleted } from './features/toggleComplete';
 import { editTodo } from './features/editTodo';
 import { renderTodos } from './features/renderTodos';
 import { initializeColorPicker } from './features/colorPicker';
+import { sortTodosByStatus } from './features/sortTodos';
 
 
 // Get references to the HTML elements: These references will be used to interact with the DOM
@@ -83,9 +84,16 @@ document.addEventListener('click', (event) => {
   }
 });
 
+// Call saveTodosToLocalStorage whenever todos change
 const clearButton = document.getElementById('clear-todos-btn') as HTMLButtonElement;
 clearButton?.addEventListener('click', () => {
   clearLocalStorage();
+});
+
+// Call the sortTodosByStatus function when the sort button is clicked
+const sortButton = document.getElementById('sort-todos-btn') as HTMLButtonElement;
+sortButton?.addEventListener('click', () => {
+  sortTodosByStatus();
 });
 
 // Call the initializeColorPicker function when the DOM is fully loaded
@@ -165,6 +173,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // Option 13: Add notifications to remind users of due todos.
 // Use the Notification API to show browser notifications.
 
+// DONE
 // Option 14: Local Storage:
 // Save the list of todos to local storage.
 // Retrieve the todos from local storage on page load.
